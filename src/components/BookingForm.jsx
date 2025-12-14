@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
+import Notification from './Notification';
 
 const BookingForm = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [showNotification, setShowNotification] = useState(false);
   const [formData, setFormData] = useState({
     type: searchParams.get('type') || 'service',
     serviceOrPackage: searchParams.get('name') || '',
@@ -26,24 +29,34 @@ const BookingForm = () => {
     if (savedPackages) setPackages(JSON.parse(savedPackages));
   }, []);
 
+  const saveBooking = (booking) => {
+    const existingBookings = localStorage.getItem('walkerBookings');
+    const bookings = existingBookings ? JSON.parse(existingBookings) : [];
+    
+    const newBooking = {
+      ...booking,
+      id: Date.now(),
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+    
+    bookings.unshift(newBooking);
+    localStorage.setItem('walkerBookings', JSON.stringify(bookings));
+    
+    return newBooking;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const message = `
-New Booking Request
+    
+    saveBooking(formData);
+    
+    setShowNotification(true);
+  };
 
-Type: ${formData.type === 'service' ? 'Service' : 'Package'}
-${formData.type === 'service' ? 'Service' : 'Package'}: ${formData.serviceOrPackage}
-Name: ${formData.name}
-Email: ${formData.email}
-Phone: ${formData.phone}
-Date: ${formData.date}
-Time: ${formData.time}
-Address: ${formData.address}
-Message: ${formData.message}
-    `.trim();
-
-    const whatsappMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/254768323230?text=${whatsappMessage}`, '_blank');
+  const handleCloseNotification = () => {
+    setShowNotification(false);
+    navigate('/');
   };
 
   const handleChange = (e) => {
@@ -56,7 +69,7 @@ Message: ${formData.message}
   const styles = {
     container: {
       minHeight: '100vh',
-      background: '#f5f5f5',
+      background: 'linear-gradient(135deg, #001f3f 0%, #003d7a 50%, #0066cc 100%)',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif'
     },
     formSection: {
@@ -65,19 +78,22 @@ Message: ${formData.message}
       padding: '0 2rem'
     },
     card: {
-      background: 'white',
-      borderRadius: '12px',
-      padding: '2rem',
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+      background: 'linear-gradient(135deg, #0066cc 0%, #004d99 100%)',
+      borderRadius: '16px',
+      padding: '2.5rem',
+      boxShadow: '0 12px 24px rgba(0, 0, 0, 0.3)',
+      border: '2px solid rgba(255, 255, 255, 0.1)'
     },
     title: {
-      color: '#003d7a',
+      color: 'white',
       fontSize: '2rem',
       marginBottom: '0.5rem',
-      textAlign: 'center'
+      textAlign: 'center',
+      fontWeight: 'bold',
+      textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
     },
     subtitle: {
-      color: '#666',
+      color: 'rgba(255, 255, 255, 0.9)',
       textAlign: 'center',
       marginBottom: '2rem'
     },
@@ -92,33 +108,38 @@ Message: ${formData.message}
       gap: '0.5rem'
     },
     label: {
-      color: '#003d7a',
+      color: 'white',
       fontWeight: '600',
       fontSize: '0.95rem'
     },
     input: {
       padding: '0.8rem',
-      border: '2px solid #e0e0e0',
+      border: '2px solid rgba(255, 255, 255, 0.3)',
       borderRadius: '8px',
       fontSize: '1rem',
-      transition: 'border-color 0.3s'
+      transition: 'border-color 0.3s',
+      boxSizing: 'border-box',
+      background: 'rgba(255, 255, 255, 0.95)'
     },
     select: {
       padding: '0.8rem',
-      border: '2px solid #e0e0e0',
+      border: '2px solid rgba(255, 255, 255, 0.3)',
       borderRadius: '8px',
       fontSize: '1rem',
-      background: 'white',
-      cursor: 'pointer'
+      background: 'rgba(255, 255, 255, 0.95)',
+      cursor: 'pointer',
+      boxSizing: 'border-box'
     },
     textarea: {
       padding: '0.8rem',
-      border: '2px solid #e0e0e0',
+      border: '2px solid rgba(255, 255, 255, 0.3)',
       borderRadius: '8px',
       fontSize: '1rem',
       minHeight: '100px',
       fontFamily: 'inherit',
-      resize: 'vertical'
+      resize: 'vertical',
+      boxSizing: 'border-box',
+      background: 'rgba(255, 255, 255, 0.95)'
     },
     row: {
       display: 'grid',
@@ -126,19 +147,20 @@ Message: ${formData.message}
       gap: '1rem'
     },
     submitButton: {
-      background: '#0066cc',
-      color: 'white',
+      background: 'white',
+      color: '#0066cc',
       border: 'none',
       padding: '1rem',
       borderRadius: '8px',
       fontSize: '1.1rem',
-      fontWeight: '600',
+      fontWeight: '700',
       cursor: 'pointer',
-      transition: 'background 0.3s',
-      marginTop: '1rem'
+      transition: 'all 0.3s',
+      marginTop: '1rem',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
     },
     required: {
-      color: '#dc3545'
+      color: '#ffeb3b'
     }
   };
 
@@ -297,6 +319,13 @@ Message: ${formData.message}
         </div>
       </div>
       <Footer />
+      
+      {showNotification && (
+        <Notification 
+          message="You will receive confirmation from our team shortly."
+          onClose={handleCloseNotification}
+        />
+      )}
     </div>
   );
 };

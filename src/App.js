@@ -16,14 +16,12 @@ function HomePage() {
   const [packages, setPackages] = useState([]);
 
   useEffect(() => {
-    // Load from localStorage or use defaults
     const savedServices = localStorage.getItem('walkerServices');
     const savedPackages = localStorage.getItem('walkerPackages');
     
     setServices(savedServices ? JSON.parse(savedServices) : defaultServices);
     setPackages(savedPackages ? JSON.parse(savedPackages) : defaultPackages);
     
-    // Save defaults if nothing exists
     if (!savedServices) {
       localStorage.setItem('walkerServices', JSON.stringify(defaultServices));
     }
@@ -36,7 +34,7 @@ function HomePage() {
     app: {
       minHeight: '100vh',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
-      background: '#f5f5f5'
+      background: 'linear-gradient(135deg, #001f3f 0%, #003d7a 50%, #0066cc 100%)'
     },
     container: {
       maxWidth: '1200px',
@@ -48,14 +46,15 @@ function HomePage() {
     },
     packagesSection: {
       padding: '4rem 0',
-      background: 'white'
+      background: 'linear-gradient(135deg, #003d7a 0%, #0066cc 100%)'
     },
     sectionTitle: {
       fontSize: '2.5rem',
-      color: '#003d7a',
+      color: 'white',
       textAlign: 'center',
       marginBottom: '3rem',
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
     },
     servicesGrid: {
       display: 'grid',

@@ -3,10 +3,11 @@ import React from 'react';
 const Footer = () => {
   const styles = {
     footer: {
-      background: '#003d7a',
+      background: 'linear-gradient(135deg, #001f3f 0%, #003d7a 100%)',
       color: 'white',
       padding: '3rem 2rem 1rem',
-      marginTop: '4rem'
+      marginTop: '0',
+      borderTop: '3px solid rgba(255, 255, 255, 0.2)'
     },
     content: {
       maxWidth: '1200px',
@@ -21,15 +22,20 @@ const Footer = () => {
     },
     heading: {
       marginBottom: '1rem',
-      fontSize: '1.3rem'
+      fontSize: '1.3rem',
+      color: 'white',
+      fontWeight: 'bold',
+      textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
     },
     paragraph: {
-      margin: '0.5rem 0'
+      margin: '0.5rem 0',
+      color: 'rgba(255, 255, 255, 0.95)'
     },
     bottom: {
       textAlign: 'center',
       paddingTop: '2rem',
-      borderTop: '1px solid rgba(255, 255, 255, 0.2)'
+      borderTop: '1px solid rgba(255, 255, 255, 0.3)',
+      color: 'rgba(255, 255, 255, 0.9)'
     }
   };
 

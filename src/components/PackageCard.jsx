@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPhone, FaWhatsapp, FaEnvelope, FaCalendarAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,6 +6,17 @@ const PackageCard = ({ package: pkg }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const navigate = useNavigate();
+
+  const images = pkg.images && Array.isArray(pkg.images) ? pkg.images : [];
+
+  useEffect(() => {
+    if (images.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      }, 4000);
+      return () => clearInterval(interval);
+    }
+  }, [images.length]);
 
   const handleCall = () => {
     window.location.href = 'tel:+254768323230';
@@ -30,28 +41,28 @@ const PackageCard = ({ package: pkg }) => {
     navigate(`/package/${pkg.id}`);
   };
 
-  const images = pkg.images || [];
-
   const styles = {
     card: {
-      background: 'white',
-      borderRadius: '12px',
+      background: 'linear-gradient(135deg, #0066cc 0%, #003d7a 100%)',
+      borderRadius: '16px',
       overflow: 'hidden',
-      boxShadow: isHovered ? '0 8px 12px rgba(0, 0, 0, 0.15)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
+      boxShadow: isHovered ? '0 12px 24px rgba(0, 102, 204, 0.4)' : '0 8px 16px rgba(0, 0, 0, 0.3)',
       transition: 'all 0.3s',
       display: 'flex',
       flexDirection: 'column',
-      transform: isHovered ? 'translateY(-5px)' : 'translateY(0)',
-      cursor: 'pointer'
+      transform: isHovered ? 'translateY(-8px)' : 'translateY(0)',
+      cursor: 'pointer',
+      border: '2px solid rgba(255, 255, 255, 0.1)'
     },
     imageContainer: {
       position: 'relative',
       width: '100%',
       height: '250px',
-      background: 'linear-gradient(135deg, #0066cc 0%, #003d7a 100%)',
+      background: 'linear-gradient(135deg, #001f3f 0%, #003d7a 100%)',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      overflow: 'hidden'
     },
     image: {
       width: '100%',
@@ -60,42 +71,59 @@ const PackageCard = ({ package: pkg }) => {
     },
     imageNav: {
       position: 'absolute',
-      bottom: '10px',
+      bottom: '15px',
       left: '50%',
       transform: 'translateX(-50%)',
       display: 'flex',
-      gap: '8px'
+      gap: '10px',
+      zIndex: 10,
+      padding: '8px 12px',
+      background: 'rgba(0, 0, 0, 0.4)',
+      borderRadius: '20px',
+      backdropFilter: 'blur(4px)'
     },
     dot: {
-      width: '8px',
-      height: '8px',
+      width: '10px',
+      height: '10px',
       borderRadius: '50%',
       background: 'rgba(255,255,255,0.5)',
       cursor: 'pointer',
-      transition: 'all 0.3s'
+      transition: 'all 0.3s',
+      border: '2px solid transparent',
+      padding: 0
     },
     activeDot: {
       background: 'white',
-      width: '24px',
-      borderRadius: '4px'
+      transform: 'scale(1.2)',
+      border: '2px solid rgba(0, 102, 204, 0.8)'
     },
     content: {
       padding: '2rem',
       display: 'flex',
       flexDirection: 'column',
-      gap: '1rem'
+      gap: '1rem',
+      background: 'linear-gradient(135deg, #0066cc 0%, #004d99 100%)'
     },
     title: {
-      color: '#003d7a',
+      color: 'white',
       fontSize: '1.8rem',
       margin: 0,
       fontStyle: 'italic',
-      textAlign: 'center'
+      textAlign: 'center',
+      fontWeight: 'bold',
+      textShadow: '1px 1px 2px rgba(0,0,0,0.2)'
+    },
+    includesSection: {
+      background: 'rgba(255, 255, 255, 0.15)',
+      padding: '1rem',
+      borderRadius: '8px',
+      backdropFilter: 'blur(10px)'
     },
     includesTitle: {
-      color: '#0066cc',
+      color: 'white',
       marginBottom: '0.5rem',
-      fontSize: '1.1rem'
+      fontSize: '1.1rem',
+      fontWeight: 'bold'
     },
     list: {
       listStyle: 'none',
@@ -105,32 +133,35 @@ const PackageCard = ({ package: pkg }) => {
     listItem: {
       padding: '0.3rem 0',
       paddingLeft: '1.5rem',
-      position: 'relative'
+      position: 'relative',
+      color: 'rgba(255, 255, 255, 0.95)'
     },
     bullet: {
       position: 'absolute',
       left: 0,
-      color: '#a02d6f'
+      color: 'white'
     },
     description: {
-      color: '#555',
+      color: 'rgba(255, 255, 255, 0.95)',
       lineHeight: '1.6',
-      fontStyle: 'italic'
+      fontStyle: 'italic',
+      textAlign: 'center'
     },
     bookButton: {
-      background: '#0066cc',
-      color: 'white',
+      background: 'white',
+      color: '#0066cc',
       border: 'none',
       padding: '0.8rem 1.5rem',
       borderRadius: '8px',
       fontSize: '1rem',
-      fontWeight: '600',
+      fontWeight: '700',
       cursor: 'pointer',
-      transition: 'background 0.3s',
+      transition: 'all 0.3s',
       display: 'flex',
       alignItems: 'center',
       gap: '0.5rem',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
     },
     contactButtons: {
       display: 'flex',
@@ -139,8 +170,8 @@ const PackageCard = ({ package: pkg }) => {
       marginTop: '1rem'
     },
     iconButton: {
-      background: 'none',
-      border: '2px solid',
+      background: 'white',
+      border: 'none',
       cursor: 'pointer',
       fontSize: '1.2rem',
       transition: 'all 0.2s',
@@ -150,19 +181,17 @@ const PackageCard = ({ package: pkg }) => {
       alignItems: 'center',
       justifyContent: 'center',
       width: '45px',
-      height: '45px'
+      height: '45px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
     },
     phoneButton: {
-      color: '#0066cc',
-      borderColor: '#0066cc'
+      color: '#0066cc'
     },
     whatsappButton: {
-      color: '#25D366',
-      borderColor: '#25D366'
+      color: '#25D366'
     },
     emailButton: {
-      color: '#a02d6f',
-      borderColor: '#a02d6f'
+      color: '#a02d6f'
     }
   };
 
@@ -175,11 +204,18 @@ const PackageCard = ({ package: pkg }) => {
       <div style={styles.imageContainer} onClick={handleViewDetails}>
         {images.length > 0 ? (
           <>
-            <img src={images[currentImageIndex]} alt={pkg.title} style={styles.image} />
+            <img 
+              src={images[currentImageIndex]} 
+              alt={pkg.title} 
+              style={styles.image}
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
             {images.length > 1 && (
               <div style={styles.imageNav}>
                 {images.map((_, index) => (
-                  <div
+                  <button
                     key={index}
                     style={{
                       ...styles.dot,
@@ -198,7 +234,7 @@ const PackageCard = ({ package: pkg }) => {
       </div>
       <div style={styles.content}>
         <h3 style={styles.title} onClick={handleViewDetails}>{pkg.title}</h3>
-        <div>
+        <div style={styles.includesSection}>
           <h4 style={styles.includesTitle}>Includes:</h4>
           <ul style={styles.list}>
             {pkg.includes.map((item, index) => (

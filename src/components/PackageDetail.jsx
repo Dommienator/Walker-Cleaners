@@ -1,29 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { FaPhone, FaWhatsapp, FaEnvelope, FaCalendarAlt, FaArrowLeft } from 'react-icons/fa';
-import Header from './Header';
-import Footer from './Footer';
+import { FaPhone, FaWhatsapp, FaEnvelope, FaCalendarAlt } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
-const PackageDetail = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [pkg, setPkg] = useState(null);
+const PackageCard = ({ package: pkg }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const navigate = useNavigate();
+
+  const images = pkg.images && Array.isArray(pkg.images) ? pkg.images : [];
 
   useEffect(() => {
-    const savedPackages = localStorage.getItem('walkerPackages');
-    if (savedPackages) {
-      const packages = JSON.parse(savedPackages);
-      const found = packages.find(p => p.id === parseInt(id));
-      setPkg(found);
+    if (images.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      }, 3000);
+      return () => clearInterval(interval);
     }
-  }, [id]);
-
-  if (!pkg) {
-    return <div>Loading...</div>;
-  }
-
-  const images = pkg.images || [];
+  }, [images.length]);
 
   const handleCall = () => {
     window.location.href = 'tel:+254768323230';
@@ -44,40 +37,32 @@ const PackageDetail = () => {
     navigate(`/book?type=package&id=${pkg.id}&name=${encodeURIComponent(pkg.title)}`);
   };
 
+  const handleViewDetails = () => {
+    navigate(`/package/${pkg.id}`);
+  };
+
   const styles = {
-    container: {
-      minHeight: '100vh',
-      background: '#f5f5f5',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif'
-    },
-    content: {
-      maxWidth: '1200px',
-      margin: '3rem auto',
-      padding: '0 2rem'
-    },
-    backButton: {
-      background: 'none',
-      border: 'none',
-      color: '#0066cc',
-      fontSize: '1.1rem',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-      marginBottom: '2rem',
-      fontWeight: '600'
-    },
     card: {
-      background: 'white',
-      borderRadius: '12px',
+      background: 'linear-gradient(135deg, #0066cc 0%, #003d7a 100%)',
+      borderRadius: '16px',
       overflow: 'hidden',
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+      boxShadow: isHovered ? '0 12px 24px rgba(0, 102, 204, 0.4)' : '0 8px 16px rgba(0, 0, 0, 0.3)',
+      transition: 'all 0.3s',
+      display: 'flex',
+      flexDirection: 'column',
+      transform: isHovered ? 'translateY(-8px)' : 'translateY(0)',
+      cursor: 'pointer',
+      border: '2px solid rgba(255, 255, 255, 0.1)'
     },
-    imageSection: {
+    imageContainer: {
       position: 'relative',
       width: '100%',
-      height: '400px',
-      background: 'linear-gradient(135deg, #0066cc 0%, #003d7a 100%)'
+      height: '250px',
+      background: 'linear-gradient(135deg, #001f3f 0%, #003d7a 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden'
     },
     image: {
       width: '100%',
@@ -86,44 +71,55 @@ const PackageDetail = () => {
     },
     imageNav: {
       position: 'absolute',
-      bottom: '20px',
+      bottom: '10px',
       left: '50%',
       transform: 'translateX(-50%)',
       display: 'flex',
-      gap: '12px'
+      gap: '8px',
+      zIndex: 10
     },
     dot: {
-      width: '12px',
-      height: '12px',
+      width: '8px',
+      height: '8px',
       borderRadius: '50%',
-      background: 'rgba(255,255,255,0.5)',
+      background: 'rgba(255,255,255,0.4)',
       cursor: 'pointer',
-      transition: 'all 0.3s'
+      transition: 'all 0.3s',
+      border: 'none',
+      padding: 0
     },
     activeDot: {
       background: 'white',
-      width: '36px',
-      borderRadius: '6px'
+      width: '24px',
+      borderRadius: '4px'
     },
-    detailsSection: {
-      padding: '3rem'
+    content: {
+      padding: '2rem',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem',
+      background: 'linear-gradient(135deg, #0066cc 0%, #004d99 100%)'
     },
     title: {
-      color: '#003d7a',
-      fontSize: '2.5rem',
-      marginBottom: '1rem',
-      fontStyle: 'italic'
+      color: 'white',
+      fontSize: '1.8rem',
+      margin: 0,
+      fontStyle: 'italic',
+      textAlign: 'center',
+      fontWeight: 'bold',
+      textShadow: '1px 1px 2px rgba(0,0,0,0.2)'
     },
     includesSection: {
-      background: '#f8f9fa',
-      padding: '2rem',
+      background: 'rgba(255, 255, 255, 0.15)',
+      padding: '1rem',
       borderRadius: '8px',
-      marginBottom: '2rem'
+      backdropFilter: 'blur(10px)'
     },
     includesTitle: {
-      color: '#0066cc',
-      fontSize: '1.5rem',
-      marginBottom: '1rem'
+      color: 'white',
+      marginBottom: '0.5rem',
+      fontSize: '1.1rem',
+      fontWeight: 'bold'
     },
     list: {
       listStyle: 'none',
@@ -131,152 +127,150 @@ const PackageDetail = () => {
       margin: 0
     },
     listItem: {
-      padding: '0.5rem 0',
-      paddingLeft: '2rem',
+      padding: '0.3rem 0',
+      paddingLeft: '1.5rem',
       position: 'relative',
-      fontSize: '1.1rem',
-      color: '#555'
+      color: 'rgba(255, 255, 255, 0.95)'
     },
     bullet: {
       position: 'absolute',
       left: 0,
-      color: '#a02d6f',
-      fontSize: '1.2rem'
+      color: 'white'
     },
     description: {
-      color: '#555',
-      fontSize: '1.2rem',
-      lineHeight: '1.8',
+      color: 'rgba(255, 255, 255, 0.95)',
+      lineHeight: '1.6',
       fontStyle: 'italic',
-      marginBottom: '2rem'
-    },
-    actionsContainer: {
-      display: 'flex',
-      gap: '1rem',
-      flexWrap: 'wrap',
-      marginTop: '2rem'
+      textAlign: 'center'
     },
     bookButton: {
-      background: '#0066cc',
-      color: 'white',
+      background: 'white',
+      color: '#0066cc',
       border: 'none',
-      padding: '1rem 2rem',
+      padding: '0.8rem 1.5rem',
       borderRadius: '8px',
-      fontSize: '1.1rem',
-      fontWeight: '600',
+      fontSize: '1rem',
+      fontWeight: '700',
       cursor: 'pointer',
-      transition: 'background 0.3s',
+      transition: 'all 0.3s',
       display: 'flex',
       alignItems: 'center',
-      gap: '0.5rem'
+      gap: '0.5rem',
+      justifyContent: 'center',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+    },
+    contactButtons: {
+      display: 'flex',
+      gap: '0.5rem',
+      justifyContent: 'center',
+      marginTop: '1rem'
     },
     iconButton: {
-      background: 'none',
-      border: '2px solid',
+      background: 'white',
+      border: 'none',
       cursor: 'pointer',
-      fontSize: '1.3rem',
+      fontSize: '1.2rem',
       transition: 'all 0.2s',
-      padding: '0.8rem',
+      padding: '0.6rem',
       borderRadius: '50%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      width: '55px',
-      height: '55px'
+      width: '45px',
+      height: '45px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
     },
     phoneButton: {
-      color: '#0066cc',
-      borderColor: '#0066cc'
+      color: '#0066cc'
     },
     whatsappButton: {
-      color: '#25D366',
-      borderColor: '#25D366'
+      color: '#25D366'
     },
     emailButton: {
-      color: '#a02d6f',
-      borderColor: '#a02d6f'
+      color: '#a02d6f'
     }
   };
 
   return (
-    <div style={styles.container}>
-      <Header />
-      <div style={styles.content}>
-        <button style={styles.backButton} onClick={() => navigate('/')}>
-          <FaArrowLeft /> Back to Packages
-        </button>
-        
-        <div style={styles.card}>
-          {images.length > 0 && (
-            <div style={styles.imageSection}>
-              <img src={images[currentImageIndex]} alt={pkg.title} style={styles.image} />
-              {images.length > 1 && (
-                <div style={styles.imageNav}>
-                  {images.map((_, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        ...styles.dot,
-                        ...(index === currentImageIndex ? styles.activeDot : {})
-                      }}
-                      onClick={() => setCurrentImageIndex(index)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-          
-          <div style={styles.detailsSection}>
-            <h1 style={styles.title}>{pkg.title}</h1>
-            
-            <div style={styles.includesSection}>
-              <h3 style={styles.includesTitle}>This Package Includes:</h3>
-              <ul style={styles.list}>
-                {pkg.includes.map((item, index) => (
-                  <li key={index} style={styles.listItem}>
-                    <span style={styles.bullet}>◆</span>
-                    {item}
-                  </li>
+    <div 
+      style={styles.card}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div style={styles.imageContainer} onClick={handleViewDetails}>
+        {images.length > 0 ? (
+          <>
+            <img 
+              src={images[currentImageIndex]} 
+              alt={pkg.title} 
+              style={styles.image}
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+            {images.length > 1 && (
+              <div style={styles.imageNav}>
+                {images.map((_, index) => (
+                  <button
+                    key={index}
+                    style={{
+                      ...styles.dot,
+                      ...(index === currentImageIndex ? styles.activeDot : {})
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex(index);
+                    }}
+                  />
                 ))}
-              </ul>
-            </div>
-            
-            <p style={styles.description}>{pkg.description}</p>
-            
-            <div style={styles.actionsContainer}>
-              <button onClick={handleBook} style={styles.bookButton}>
-                <FaCalendarAlt /> Book This Package
-              </button>
-              
-              <button 
-                onClick={handleCall} 
-                style={{...styles.iconButton, ...styles.phoneButton}}
-                title="Call us"
-              >
-                <FaPhone />
-              </button>
-              <button 
-                onClick={handleWhatsApp} 
-                style={{...styles.iconButton, ...styles.whatsappButton}}
-                title="WhatsApp"
-              >
-                <FaWhatsapp />
-              </button>
-              <button 
-                onClick={handleEmail} 
-                style={{...styles.iconButton, ...styles.emailButton}}
-                title="Email us"
-              >
-                <FaEnvelope />
-              </button>
-            </div>
-          </div>
+              </div>
+            )}
+          </>
+        ) : null}
+      </div>
+      <div style={styles.content}>
+        <h3 style={styles.title} onClick={handleViewDetails}>{pkg.title}</h3>
+        <div style={styles.includesSection}>
+          <h4 style={styles.includesTitle}>Includes:</h4>
+          <ul style={styles.list}>
+            {pkg.includes.map((item, index) => (
+              <li key={index} style={styles.listItem}>
+                <span style={styles.bullet}>◆</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p style={styles.description}>{pkg.description}</p>
+        <button onClick={handleBook} style={styles.bookButton}>
+          <FaCalendarAlt /> Book This Package
+        </button>
+        <div style={styles.contactButtons}>
+          <button 
+            onClick={handleCall} 
+            style={{...styles.iconButton, ...styles.phoneButton}}
+            title="Call us"
+          >
+            <FaPhone />
+          </button>
+          <button 
+            onClick={handleWhatsApp} 
+            style={{...styles.iconButton, ...styles.whatsappButton}}
+            title="WhatsApp"
+          >
+            <FaWhatsapp />
+          </button>
+          <button 
+            onClick={handleEmail} 
+            style={{...styles.iconButton, ...styles.emailButton}}
+            title="Email us"
+          >
+            <FaEnvelope />
+          </button>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };
 
-export default PackageDetail;
+export default PackageCard;

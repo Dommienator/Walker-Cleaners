@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FaCalendarAlt } from 'react-icons/fa';
 
@@ -6,6 +6,14 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const [headerImage, setHeaderImage] = useState('');
+
+  useEffect(() => {
+    const savedHeaderImage = localStorage.getItem('walkerHeaderImage');
+    if (savedHeaderImage) {
+      setHeaderImage(savedHeaderImage);
+    }
+  }, []);
 
   const scrollToSection = (id) => {
     if (!isHomePage) {
@@ -25,7 +33,6 @@ const Header = () => {
   };
 
   const handleBlogClick = () => {
-    // Replace with your WordPress blog URL when ready
     window.open('https://your-blog-url.com', '_blank');
   };
 
@@ -39,9 +46,15 @@ const Header = () => {
 
   const styles = {
     header: {
-      background: 'linear-gradient(135deg, #0066cc 0%, #003d7a 100%)',
+      background: headerImage 
+        ? `linear-gradient(rgba(0, 31, 63, 0.85), rgba(0, 61, 122, 0.85)), url(${headerImage})`
+        : 'linear-gradient(135deg, #0066cc 0%, #003d7a 100%)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
       color: 'white',
-      paddingBottom: isHomePage ? '4rem' : '2rem'
+      paddingBottom: isHomePage ? '4rem' : '2rem',
+      position: 'relative'
     },
     headerContent: {
       display: 'flex',
@@ -51,12 +64,15 @@ const Header = () => {
       maxWidth: '1200px',
       margin: '0 auto',
       flexWrap: 'wrap',
-      gap: '1rem'
+      gap: '1rem',
+      position: 'relative',
+      zIndex: 2
     },
     logo: {
       height: '60px',
       width: 'auto',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))'
     },
     navSection: {
       display: 'flex',
@@ -71,9 +87,10 @@ const Header = () => {
       color: 'white',
       textDecoration: 'none',
       fontSize: '1.1rem',
-      fontWeight: '500',
+      fontWeight: '600',
       cursor: 'pointer',
-      transition: 'opacity 0.3s'
+      transition: 'opacity 0.3s',
+      textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
     },
     bookButton: {
       background: 'white',
@@ -87,27 +104,33 @@ const Header = () => {
       transition: 'all 0.3s',
       display: 'flex',
       alignItems: 'center',
-      gap: '0.5rem'
+      gap: '0.5rem',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
     },
     heroSection: {
       textAlign: 'center',
       padding: '3rem 2rem',
       maxWidth: '800px',
-      margin: '0 auto'
+      margin: '0 auto',
+      position: 'relative',
+      zIndex: 2
     },
     h1: {
       fontSize: '3.5rem',
       marginBottom: '1rem',
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      textShadow: '3px 3px 6px rgba(0,0,0,0.4)'
     },
     tagline: {
       fontSize: '1.8rem',
       marginBottom: '1rem',
-      fontWeight: '600'
+      fontWeight: '600',
+      textShadow: '2px 2px 4px rgba(0,0,0,0.4)'
     },
     subtitle: {
       fontSize: '1.2rem',
-      opacity: '0.9'
+      opacity: '0.95',
+      textShadow: '1px 1px 2px rgba(0,0,0,0.4)'
     }
   };
 

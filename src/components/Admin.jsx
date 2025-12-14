@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import Bookings from './Bookings';
 
 const Admin = () => {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentView, setCurrentView] = useState('services');
   const [services, setServices] = useState([]);
   const [packages, setPackages] = useState([]);
   const [editingService, setEditingService] = useState(null);
   const [editingPackage, setEditingPackage] = useState(null);
+  const [headerImage, setHeaderImage] = useState('');
 
-  // Simple password check (in production, use proper authentication)
   const ADMIN_PASSWORD = 'walker2024';
 
   useEffect(() => {
@@ -20,9 +22,11 @@ const Admin = () => {
   const loadData = () => {
     const savedServices = localStorage.getItem('walkerServices');
     const savedPackages = localStorage.getItem('walkerPackages');
+    const savedHeaderImage = localStorage.getItem('walkerHeaderImage');
     
     if (savedServices) setServices(JSON.parse(savedServices));
     if (savedPackages) setPackages(JSON.parse(savedPackages));
+    if (savedHeaderImage) setHeaderImage(savedHeaderImage);
   };
 
   const saveServices = (newServices) => {
@@ -33,6 +37,11 @@ const Admin = () => {
   const savePackages = (newPackages) => {
     localStorage.setItem('walkerPackages', JSON.stringify(newPackages));
     setPackages(newPackages);
+  };
+
+  const saveHeaderImage = (imageData) => {
+    localStorage.setItem('walkerHeaderImage', imageData);
+    setHeaderImage(imageData);
   };
 
   const handleLogin = (e) => {
@@ -72,6 +81,22 @@ const Admin = () => {
     }
   };
 
+  const handleHeaderImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5000000) {
+        alert('Image too large. Please use an image under 5MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        saveHeaderImage(reader.result);
+        alert('Header image updated successfully!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const styles = {
     container: {
       minHeight: '100vh',
@@ -92,7 +117,8 @@ const Admin = () => {
       marginBottom: '1rem',
       border: '1px solid #ddd',
       borderRadius: '8px',
-      fontSize: '1rem'
+      fontSize: '1rem',
+      boxSizing: 'border-box'
     },
     button: {
       width: '100%',
@@ -110,6 +136,28 @@ const Admin = () => {
       margin: '0 auto 2rem',
       textAlign: 'center'
     },
+    tabs: {
+      display: 'flex',
+      gap: '1rem',
+      justifyContent: 'center',
+      marginTop: '1rem',
+      flexWrap: 'wrap'
+    },
+    tab: {
+      padding: '0.8rem 1.5rem',
+      background: 'white',
+      border: '2px solid #0066cc',
+      color: '#0066cc',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontWeight: '600',
+      fontSize: '1rem',
+      transition: 'all 0.3s'
+    },
+    activeTab: {
+      background: '#0066cc',
+      color: 'white'
+    },
     section: {
       maxWidth: '1200px',
       margin: '0 auto 2rem',
@@ -117,6 +165,25 @@ const Admin = () => {
       padding: '2rem',
       borderRadius: '12px',
       boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+    },
+    headerImageSection: {
+      marginBottom: '2rem',
+      padding: '1.5rem',
+      background: '#f8f9fa',
+      borderRadius: '8px'
+    },
+    fileInput: {
+      padding: '0.8rem',
+      border: '2px solid #ddd',
+      borderRadius: '8px',
+      width: '100%',
+      cursor: 'pointer'
+    },
+    previewImage: {
+      marginTop: '1rem',
+      maxWidth: '100%',
+      maxHeight: '200px',
+      borderRadius: '8px'
     },
     grid: {
       display: 'grid',
@@ -129,11 +196,13 @@ const Admin = () => {
       borderRadius: '8px',
       display: 'flex',
       justifyContent: 'space-between',
-      alignItems: 'center'
+      alignItems: 'center',
+      gap: '1rem'
     },
     buttonGroup: {
       display: 'flex',
-      gap: '0.5rem'
+      gap: '0.5rem',
+      flexShrink: 0
     },
     editButton: {
       padding: '0.5rem 1rem',
@@ -141,7 +210,8 @@ const Admin = () => {
       color: 'white',
       border: 'none',
       borderRadius: '6px',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      whiteSpace: 'nowrap'
     },
     deleteButton: {
       padding: '0.5rem 1rem',
@@ -149,7 +219,8 @@ const Admin = () => {
       color: 'white',
       border: 'none',
       borderRadius: '6px',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      whiteSpace: 'nowrap'
     },
     addButton: {
       padding: '0.8rem 1.5rem',
@@ -180,71 +251,140 @@ const Admin = () => {
     );
   }
 
+  if (currentView === 'bookings') {
+    return (
+      <div style={styles.container}>
+        <Bookings onBack={() => setCurrentView('services')} />
+      </div>
+    );
+  }
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={{ color: '#003d7a', marginBottom: '0.5rem' }}>Walker Cleaners Admin</h1>
-        <button 
-          onClick={() => setIsAuthenticated(false)} 
-          style={{...styles.button, width: 'auto', padding: '0.5rem 1.5rem'}}
-        >
-          Logout
-        </button>
-      </div>
-
-      <div style={styles.section}>
-        <h2 style={{ color: '#003d7a', marginBottom: '1rem' }}>Services</h2>
-        <button 
-          onClick={() => setEditingService({ isNew: true, title: '', icon: '', description: '', images: [] })}
-          style={styles.addButton}
-        >
-          Add New Service
-        </button>
-        <div style={styles.grid}>
-          {services.map(service => (
-            <div key={service.id} style={styles.item}>
-              <div>
-                <strong>{service.icon} {service.title}</strong>
-                <p style={{ margin: '0.5rem 0 0', color: '#666' }}>{service.description}</p>
-                {service.images && service.images.length > 0 && (
-                  <small style={{ color: '#0066cc' }}>{service.images.length} image(s)</small>
-                )}
-              </div>
-              <div style={styles.buttonGroup}>
-                <button onClick={() => setEditingService(service)} style={styles.editButton}>Edit</button>
-                <button onClick={() => handleServiceDelete(service.id)} style={styles.deleteButton}>Delete</button>
-              </div>
-            </div>
-          ))}
+        <h1 style={{ color: '#003d7a', marginBottom: '1rem' }}>Walker Cleaners Admin</h1>
+        <div style={styles.tabs}>
+          <button 
+            onClick={() => setCurrentView('settings')}
+            style={{
+              ...styles.tab,
+              ...(currentView === 'settings' ? styles.activeTab : {})
+            }}
+          >
+            Settings
+          </button>
+          <button 
+            onClick={() => setCurrentView('services')}
+            style={{
+              ...styles.tab,
+              ...(currentView === 'services' ? styles.activeTab : {})
+            }}
+          >
+            Services
+          </button>
+          <button 
+            onClick={() => setCurrentView('packages')}
+            style={{
+              ...styles.tab,
+              ...(currentView === 'packages' ? styles.activeTab : {})
+            }}
+          >
+            Packages
+          </button>
+          <button 
+            onClick={() => setCurrentView('bookings')}
+            style={{
+              ...styles.tab,
+              ...(currentView === 'bookings' ? styles.activeTab : {})
+            }}
+          >
+            Bookings & History
+          </button>
+          <button 
+            onClick={() => setIsAuthenticated(false)} 
+            style={{...styles.tab, borderColor: '#dc3545', color: '#dc3545'}}
+          >
+            Logout
+          </button>
         </div>
       </div>
 
-      <div style={styles.section}>
-        <h2 style={{ color: '#003d7a', marginBottom: '1rem' }}>Packages</h2>
-        <button 
-          onClick={() => setEditingPackage({ isNew: true, title: '', includes: [], description: '', images: [] })}
-          style={styles.addButton}
-        >
-          Add New Package
-        </button>
-        <div style={styles.grid}>
-          {packages.map(pkg => (
-            <div key={pkg.id} style={styles.item}>
-              <div>
-                <strong>{pkg.title}</strong>
-                <p style={{ margin: '0.5rem 0 0', color: '#666' }}>{pkg.description}</p>
-                {pkg.images && pkg.images.length > 0 && (
-                  <small style={{ color: '#0066cc' }}>{pkg.images.length} image(s)</small>
-                )}
-              </div>
-              <div style={styles.buttonGroup}>
-                <button onClick={() => setEditingPackage(pkg)} style={styles.editButton}>Edit</button>
-                <button onClick={() => handlePackageDelete(pkg.id)} style={styles.deleteButton}>Delete</button>
-              </div>
-            </div>
-          ))}
+      {currentView === 'settings' && (
+        <div style={styles.section}>
+          <h2 style={{ color: '#003d7a', marginBottom: '1rem' }}>Website Settings</h2>
+          
+          <div style={styles.headerImageSection}>
+            <h3 style={{ color: '#003d7a', marginBottom: '1rem' }}>Header Background Image</h3>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleHeaderImageUpload}
+              style={styles.fileInput}
+            />
+            {headerImage && (
+              <img src={headerImage} alt="Header preview" style={styles.previewImage} />
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {currentView === 'services' && (
+        <div style={styles.section}>
+          <h2 style={{ color: '#003d7a', marginBottom: '1rem' }}>Services</h2>
+          <button 
+            onClick={() => setEditingService({ isNew: true, title: '', icon: '', description: '', images: [] })}
+            style={styles.addButton}
+          >
+            Add New Service
+          </button>
+          <div style={styles.grid}>
+            {services.map(service => (
+              <div key={service.id} style={styles.item}>
+                <div style={{ flex: 1 }}>
+                  <strong>{service.icon} {service.title}</strong>
+                  <p style={{ margin: '0.5rem 0 0', color: '#666' }}>{service.description}</p>
+                  {service.images && service.images.length > 0 && (
+                    <small style={{ color: '#0066cc' }}>{service.images.length} image(s)</small>
+                  )}
+                </div>
+                <div style={styles.buttonGroup}>
+                  <button onClick={() => setEditingService(service)} style={styles.editButton}>Edit</button>
+                  <button onClick={() => handleServiceDelete(service.id)} style={styles.deleteButton}>Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {currentView === 'packages' && (
+        <div style={styles.section}>
+          <h2 style={{ color: '#003d7a', marginBottom: '1rem' }}>Packages</h2>
+          <button 
+            onClick={() => setEditingPackage({ isNew: true, title: '', includes: [], description: '', images: [] })}
+            style={styles.addButton}
+          >
+            Add New Package
+          </button>
+          <div style={styles.grid}>
+            {packages.map(pkg => (
+              <div key={pkg.id} style={styles.item}>
+                <div style={{ flex: 1 }}>
+                  <strong>{pkg.title}</strong>
+                  <p style={{ margin: '0.5rem 0 0', color: '#666' }}>{pkg.description}</p>
+                  {pkg.images && pkg.images.length > 0 && (
+                    <small style={{ color: '#0066cc' }}>{pkg.images.length} image(s)</small>
+                  )}
+                </div>
+                <div style={styles.buttonGroup}>
+                  <button onClick={() => setEditingPackage(pkg)} style={styles.editButton}>Edit</button>
+                  <button onClick={() => handlePackageDelete(pkg.id)} style={styles.deleteButton}>Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {editingService && (
         <ServiceEditor 
@@ -270,21 +410,25 @@ const ServiceEditor = ({ service, onSave, onCancel }) => {
     ...service,
     images: service.images || []
   });
-  const [newImageUrl, setNewImageUrl] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  const handleAddImage = () => {
-    if (newImageUrl.trim()) {
-      setFormData({
-        ...formData,
-        images: [...formData.images, newImageUrl.trim()]
-      });
-      setNewImageUrl('');
-    }
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    
+    files.forEach(file => {
+      if (file.size > 5000000) {
+        alert(`${file.name} is too large. Please use images under 5MB.`);
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, reader.result]
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleRemoveImage = (index) => {
@@ -292,6 +436,11 @@ const ServiceEditor = ({ service, onSave, onCancel }) => {
       ...formData,
       images: formData.images.filter((_, i) => i !== index)
     });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
   };
 
   const styles = {
@@ -344,27 +493,13 @@ const ServiceEditor = ({ service, onSave, onCancel }) => {
       background: '#f8f9fa',
       borderRadius: '8px'
     },
-    imageInputGroup: {
-      display: 'flex',
-      gap: '0.5rem',
-      marginBottom: '1rem'
-    },
-    imageInput: {
-      flex: 1,
+    fileInput: {
+      width: '100%',
       padding: '0.8rem',
-      border: '1px solid #ddd',
-      borderRadius: '8px',
-      fontSize: '1rem'
-    },
-    addImageButton: {
-      padding: '0.8rem 1.5rem',
-      background: '#28a745',
-      color: 'white',
-      border: 'none',
+      border: '2px dashed #0066cc',
       borderRadius: '8px',
       cursor: 'pointer',
-      fontWeight: '600',
-      whiteSpace: 'nowrap'
+      marginBottom: '1rem'
     },
     imageList: {
       display: 'grid',
@@ -470,28 +605,23 @@ const ServiceEditor = ({ service, onSave, onCancel }) => {
         />
 
         <div style={styles.imageSection}>
-          <label style={styles.sectionLabel}>Service Images (Optional)</label>
+          <label style={styles.sectionLabel}>Service Images</label>
           <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.5rem' }}>
-            Add image URLs - they will appear as slides on the service card
+            Upload images directly - they will appear as slides on the service card
           </p>
-          <div style={styles.imageInputGroup}>
-            <input
-              type="url"
-              placeholder="Image URL (e.g., https://example.com/image.jpg)"
-              value={newImageUrl}
-              onChange={(e) => setNewImageUrl(e.target.value)}
-              style={styles.imageInput}
-            />
-            <button type="button" onClick={handleAddImage} style={styles.addImageButton}>
-              Add
-            </button>
-          </div>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageUpload}
+            style={styles.fileInput}
+          />
           
           {formData.images.length > 0 && (
             <div style={styles.imageList}>
-              {formData.images.map((url, index) => (
+              {formData.images.map((img, index) => (
                 <div key={index} style={styles.imageItem}>
-                  <img src={url} alt={`Service ${index + 1}`} style={styles.image} />
+                  <img src={img} alt={`Service ${index + 1}`} style={styles.image} />
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(index)}
@@ -520,30 +650,39 @@ const PackageEditor = ({ package: pkg, onSave, onCancel }) => {
     includes: pkg.includes ? pkg.includes.join('\n') : '',
     images: pkg.images || []
   });
-  const [newImageUrl, setNewImageUrl] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave({
-      ...formData,
-      includes: formData.includes.split('\n').filter(line => line.trim())
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    
+    files.forEach(file => {
+      if (file.size > 5000000) {
+        alert(`${file.name} is too large. Please use images under 5MB.`);
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, reader.result]
+        }));
+      };
+      reader.readAsDataURL(file);
     });
-  };
-
-  const handleAddImage = () => {
-    if (newImageUrl.trim()) {
-      setFormData({
-        ...formData,
-        images: [...formData.images, newImageUrl.trim()]
-      });
-      setNewImageUrl('');
-    }
   };
 
   const handleRemoveImage = (index) => {
     setFormData({
       ...formData,
       images: formData.images.filter((_, i) => i !== index)
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({
+      ...formData,
+      includes: formData.includes.split('\n').filter(line => line.trim())
     });
   };
 
@@ -597,27 +736,13 @@ const PackageEditor = ({ package: pkg, onSave, onCancel }) => {
       background: '#f8f9fa',
       borderRadius: '8px'
     },
-    imageInputGroup: {
-      display: 'flex',
-      gap: '0.5rem',
-      marginBottom: '1rem'
-    },
-    imageInput: {
-      flex: 1,
+    fileInput: {
+      width: '100%',
       padding: '0.8rem',
-      border: '1px solid #ddd',
-      borderRadius: '8px',
-      fontSize: '1rem'
-    },
-    addImageButton: {
-      padding: '0.8rem 1.5rem',
-      background: '#28a745',
-      color: 'white',
-      border: 'none',
+      border: '2px dashed #0066cc',
       borderRadius: '8px',
       cursor: 'pointer',
-      fontWeight: '600',
-      whiteSpace: 'nowrap'
+      marginBottom: '1rem'
     },
     imageList: {
       display: 'grid',
@@ -722,28 +847,23 @@ const PackageEditor = ({ package: pkg, onSave, onCancel }) => {
         />
 
         <div style={styles.imageSection}>
-          <label style={styles.sectionLabel}>Package Images (Optional)</label>
+          <label style={styles.sectionLabel}>Package Images</label>
           <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.5rem' }}>
-            Add image URLs - they will appear as slides on the package card
+            Upload images directly - they will appear as slides on the package card
           </p>
-          <div style={styles.imageInputGroup}>
-            <input
-              type="url"
-              placeholder="Image URL (e.g., https://example.com/image.jpg)"
-              value={newImageUrl}
-              onChange={(e) => setNewImageUrl(e.target.value)}
-              style={styles.imageInput}
-            />
-            <button type="button" onClick={handleAddImage} style={styles.addImageButton}>
-              Add
-            </button>
-          </div>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageUpload}
+            style={styles.fileInput}
+          />
           
           {formData.images.length > 0 && (
             <div style={styles.imageList}>
-              {formData.images.map((url, index) => (
+              {formData.images.map((img, index) => (
                 <div key={index} style={styles.imageItem}>
-                  <img src={url} alt={`Package ${index + 1}`} style={styles.image} />
+                  <img src={img} alt={`Package ${index + 1}`} style={styles.image} />
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(index)}

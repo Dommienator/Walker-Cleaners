@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPhone, FaWhatsapp, FaEnvelope, FaCalendarAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,6 +6,17 @@ const ServiceCard = ({ service }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const navigate = useNavigate();
+
+  const images = service.images && Array.isArray(service.images) ? service.images : [];
+
+  useEffect(() => {
+    if (images.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      }, 4000);
+      return () => clearInterval(interval);
+    }
+  }, [images.length]);
 
   const handleCall = () => {
     window.location.href = 'tel:+254768323230';
@@ -30,28 +41,28 @@ const ServiceCard = ({ service }) => {
     navigate(`/service/${service.id}`);
   };
 
-  const images = service.images || [];
-
   const styles = {
     card: {
-      background: 'white',
-      borderRadius: '12px',
+      background: 'linear-gradient(135deg, #0066cc 0%, #003d7a 100%)',
+      borderRadius: '16px',
       overflow: 'hidden',
-      boxShadow: isHovered ? '0 8px 12px rgba(0, 0, 0, 0.15)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
+      boxShadow: isHovered ? '0 12px 24px rgba(0, 102, 204, 0.4)' : '0 8px 16px rgba(0, 0, 0, 0.3)',
       transition: 'all 0.3s',
       display: 'flex',
       flexDirection: 'column',
-      transform: isHovered ? 'translateY(-5px)' : 'translateY(0)',
-      cursor: 'pointer'
+      transform: isHovered ? 'translateY(-8px)' : 'translateY(0)',
+      cursor: 'pointer',
+      border: '2px solid rgba(255, 255, 255, 0.1)'
     },
     imageContainer: {
       position: 'relative',
       width: '100%',
       height: '200px',
-      background: 'linear-gradient(135deg, #0066cc 0%, #003d7a 100%)',
+      background: 'linear-gradient(135deg, #001f3f 0%, #003d7a 100%)',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      overflow: 'hidden'
     },
     image: {
       width: '100%',
@@ -64,42 +75,70 @@ const ServiceCard = ({ service }) => {
     },
     imageNav: {
       position: 'absolute',
-      bottom: '10px',
+      bottom: '15px',
       left: '50%',
       transform: 'translateX(-50%)',
       display: 'flex',
-      gap: '8px'
+      gap: '10px',
+      zIndex: 10,
+      padding: '8px 12px',
+      background: 'rgba(0, 0, 0, 0.4)',
+      borderRadius: '20px',
+      backdropFilter: 'blur(4px)'
     },
     dot: {
-      width: '8px',
-      height: '8px',
+      width: '10px',
+      height: '10px',
       borderRadius: '50%',
       background: 'rgba(255,255,255,0.5)',
       cursor: 'pointer',
-      transition: 'all 0.3s'
+      transition: 'all 0.3s',
+      border: '2px solid transparent',
+      padding: 0
     },
     activeDot: {
       background: 'white',
-      width: '24px',
-      borderRadius: '4px'
+      transform: 'scale(1.2)',
+      border: '2px solid rgba(0, 102, 204, 0.8)'
     },
     content: {
       padding: '1.5rem',
       display: 'flex',
       flexDirection: 'column',
       gap: '1rem',
-      flexGrow: 1
+      flexGrow: 1,
+      background: 'linear-gradient(135deg, #0066cc 0%, #004d99 100%)'
     },
     title: {
-      color: '#003d7a',
+      color: 'white',
       fontSize: '1.5rem',
       textAlign: 'center',
-      margin: 0
+      margin: 0,
+      fontWeight: 'bold',
+      textShadow: '1px 1px 2px rgba(0,0,0,0.2)'
     },
     description: {
-      color: '#555',
+      color: 'rgba(255, 255, 255, 0.95)',
       lineHeight: '1.6',
-      flexGrow: 1
+      flexGrow: 1,
+      textAlign: 'center'
+    },
+    bookButton: {
+      background: 'white',
+      color: '#0066cc',
+      border: 'none',
+      padding: '0.8rem 1.5rem',
+      borderRadius: '8px',
+      fontSize: '1rem',
+      fontWeight: '700',
+      cursor: 'pointer',
+      transition: 'all 0.3s',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      justifyContent: 'center',
+      width: '100%',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
     },
     contactButtons: {
       display: 'flex',
@@ -108,8 +147,8 @@ const ServiceCard = ({ service }) => {
       flexWrap: 'wrap'
     },
     iconButton: {
-      background: 'none',
-      border: '2px solid',
+      background: 'white',
+      border: 'none',
       cursor: 'pointer',
       fontSize: '1.2rem',
       transition: 'all 0.2s',
@@ -119,35 +158,17 @@ const ServiceCard = ({ service }) => {
       alignItems: 'center',
       justifyContent: 'center',
       width: '45px',
-      height: '45px'
+      height: '45px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
     },
     phoneButton: {
-      color: '#0066cc',
-      borderColor: '#0066cc'
+      color: '#0066cc'
     },
     whatsappButton: {
-      color: '#25D366',
-      borderColor: '#25D366'
+      color: '#25D366'
     },
     emailButton: {
-      color: '#a02d6f',
-      borderColor: '#a02d6f'
-    },
-    bookButton: {
-      background: '#0066cc',
-      color: 'white',
-      border: 'none',
-      padding: '0.8rem 1.5rem',
-      borderRadius: '8px',
-      fontSize: '1rem',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'background 0.3s',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-      justifyContent: 'center',
-      width: '100%'
+      color: '#a02d6f'
     }
   };
 
@@ -160,11 +181,19 @@ const ServiceCard = ({ service }) => {
       <div style={styles.imageContainer} onClick={handleViewDetails}>
         {images.length > 0 ? (
           <>
-            <img src={images[currentImageIndex]} alt={service.title} style={styles.image} />
+            <img 
+              src={images[currentImageIndex]} 
+              alt={service.title} 
+              style={styles.image}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = `<div style="font-size: 4rem; color: white;">${service.icon}</div>`;
+              }}
+            />
             {images.length > 1 && (
               <div style={styles.imageNav}>
                 {images.map((_, index) => (
-                  <div
+                  <button
                     key={index}
                     style={{
                       ...styles.dot,
