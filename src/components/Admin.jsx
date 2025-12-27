@@ -4,6 +4,7 @@ import Bookings from './Bookings';
 const Admin = () => {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [currentView, setCurrentView] = useState('services');
   const [services, setServices] = useState([]);
   const [packages, setPackages] = useState([]);
@@ -14,10 +15,25 @@ const Admin = () => {
   const ADMIN_PASSWORD = 'walker2024';
 
   useEffect(() => {
+    // Check if admin was previously authenticated
+    const savedAuth = sessionStorage.getItem('walkerAdminAuth');
+    const rememberedAuth = localStorage.getItem('walkerAdminRemember');
+    
+    if (savedAuth || rememberedAuth) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  useEffect(() => {
     if (isAuthenticated) {
       loadData();
+      // Save authentication state
+      sessionStorage.setItem('walkerAdminAuth', 'true');
+      if (rememberMe) {
+        localStorage.setItem('walkerAdminRemember', 'true');
+      }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, rememberMe]);
 
   const loadData = () => {
     const savedServices = localStorage.getItem('walkerServices');
@@ -51,6 +67,12 @@ const Admin = () => {
     } else {
       alert('Incorrect password');
     }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('walkerAdminAuth');
+    localStorage.removeItem('walkerAdminRemember');
   };
 
   const handleServiceSave = (service) => {
@@ -110,6 +132,22 @@ const Admin = () => {
       padding: '2rem',
       borderRadius: '12px',
       boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+    },
+    checkboxContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      marginBottom: '1rem'
+    },
+    checkbox: {
+      width: '18px',
+      height: '18px',
+      cursor: 'pointer'
+    },
+    checkboxLabel: {
+      color: '#666',
+      fontSize: '0.9rem',
+      cursor: 'pointer'
     },
     input: {
       width: '100%',
@@ -245,6 +283,18 @@ const Admin = () => {
             onChange={(e) => setPassword(e.target.value)}
             style={styles.input}
           />
+          <div style={styles.checkboxContainer}>
+            <input
+              type="checkbox"
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              style={styles.checkbox}
+            />
+            <label htmlFor="rememberMe" style={styles.checkboxLabel}>
+              Keep me logged in
+            </label>
+          </div>
           <button type="submit" style={styles.button}>Login</button>
         </form>
       </div>
@@ -301,7 +351,7 @@ const Admin = () => {
             Bookings & History
           </button>
           <button 
-            onClick={() => setIsAuthenticated(false)} 
+            onClick={handleLogout} 
             style={{...styles.tab, borderColor: '#dc3545', color: '#dc3545'}}
           >
             Logout

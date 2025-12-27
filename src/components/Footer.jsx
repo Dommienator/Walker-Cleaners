@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Footer = () => {
+  const navigate = useNavigate();
   const styles = {
     footer: {
       background: 'linear-gradient(135deg, #001f3f 0%, #003d7a 100%)',
@@ -31,6 +33,12 @@ const Footer = () => {
       margin: '0.5rem 0',
       color: 'rgba(255, 255, 255, 0.95)'
     },
+    link: {
+      color: 'rgba(255, 255, 255, 0.95)',
+      cursor: 'pointer',
+      textDecoration: 'underline',
+      transition: 'opacity 0.3s'
+    },
     bottom: {
       textAlign: 'center',
       paddingTop: '2rem',
@@ -54,6 +62,11 @@ const Footer = () => {
           <p style={styles.paragraph}>Instagram: @walkercleaners</p>
           <p style={styles.paragraph}>Facebook: walkercleaners</p>
           <p style={styles.paragraph}>Twitter: walkercleaners</p>
+        </div>
+        <div style={styles.section}>
+          <h4 style={styles.heading}>Quick Links</h4>
+          <p style={styles.link} onClick={() => navigate('/track')}>Track Your Booking</p>
+          <p style={styles.link} onClick={() => navigate('/book')}>Book a Service</p>
         </div>
       </div>
       <div style={styles.bottom}>

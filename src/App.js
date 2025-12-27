@@ -8,6 +8,7 @@ import Admin from './components/Admin';
 import BookingForm from './components/BookingForm';
 import ServiceDetail from './components/ServiceDetail';
 import PackageDetail from './components/PackageDetail';
+import TrackBooking from './components/TrackBooking';
 import { services as defaultServices } from './data/services';
 import { packages as defaultPackages } from './data/packages';
 
@@ -16,12 +17,14 @@ function HomePage() {
   const [packages, setPackages] = useState([]);
 
   useEffect(() => {
+    // Load from localStorage or use defaults
     const savedServices = localStorage.getItem('walkerServices');
     const savedPackages = localStorage.getItem('walkerPackages');
     
     setServices(savedServices ? JSON.parse(savedServices) : defaultServices);
     setPackages(savedPackages ? JSON.parse(savedPackages) : defaultPackages);
     
+    // Save defaults if nothing exists
     if (!savedServices) {
       localStorage.setItem('walkerServices', JSON.stringify(defaultServices));
     }
@@ -34,7 +37,7 @@ function HomePage() {
     app: {
       minHeight: '100vh',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
-      background: 'linear-gradient(135deg, #001f3f 0%, #003d7a 50%, #0066cc 100%)'
+      background: '#f5f5f5'
     },
     container: {
       maxWidth: '1200px',
@@ -46,15 +49,14 @@ function HomePage() {
     },
     packagesSection: {
       padding: '4rem 0',
-      background: 'linear-gradient(135deg, #003d7a 0%, #0066cc 100%)'
+      background: 'white'
     },
     sectionTitle: {
       fontSize: '2.5rem',
-      color: 'white',
+      color: '#003d7a',
       textAlign: 'center',
       marginBottom: '3rem',
-      fontWeight: 'bold',
-      textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+      fontWeight: 'bold'
     },
     servicesGrid: {
       display: 'grid',
@@ -108,6 +110,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/book" element={<BookingForm />} />
+        <Route path="/track" element={<TrackBooking />} />
         <Route path="/service/:id" element={<ServiceDetail />} />
         <Route path="/package/:id" element={<PackageDetail />} />
       </Routes>
