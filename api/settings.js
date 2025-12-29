@@ -19,7 +19,7 @@ async function connectToDatabase() {
 
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
@@ -29,36 +29,24 @@ module.exports = async (req, res) => {
   try {
     const client = await connectToDatabase();
     const db = client.db("walker-cleaners");
-    const services = db.collection("services");
+    const settings = db.collection("settings");
 
-    // GET - Fetch all services
+    // GET - Fetch settings
     if (req.method === "GET") {
-      const allServices = await services.find({}).sort({ id: 1 }).toArray();
-      return res.status(200).json({ success: true, services: allServices });
+      const siteSettings = await settings.findOne({ type: "site" });
+      return res
+        .status(200)
+        .json({ success: true, settings: siteSettings || {} });
     }
 
-    // POST - Create service
-    if (req.method === "POST") {
-      const service = req.body;
-      await services.insertOne(service);
-      return res.status(201).json({ success: true, service });
-    }
-
-    // PUT - Update service
+    // PUT - Update settings
     if (req.method === "PUT") {
-      const service = req.body;
-      await services.updateOne(
-        { id: service.id },
-        { $set: service },
+      const { headerImage } = req.body;
+      await settings.updateOne(
+        { type: "site" },
+        { $set: { headerImage, updatedAt: new Date().toISOString() } },
         { upsert: true }
       );
-      return res.status(200).json({ success: true });
-    }
-
-    // DELETE - Delete service
-    if (req.method === "DELETE") {
-      const { id } = req.query;
-      await services.deleteOne({ id: parseInt(id) });
       return res.status(200).json({ success: true });
     }
 

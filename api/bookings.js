@@ -1,90 +1,91 @@
-import clientPromise from '../src/lib/mongodb';
+const { MongoClient } = require("mongodb");
 
-export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+const uri = process.env.MONGODB_URI;
+let cachedClient = null;
 
-  if (req.method === 'OPTIONS') {
+async function connectToDatabase() {
+  if (cachedClient) {
+    return cachedClient;
+  }
+
+  const client = await MongoClient.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+
+  cachedClient = client;
+  return client;
+}
+
+module.exports = async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
   try {
-    const client = await clientPromise;
-    const db = client.db('walker-cleaners');
+    const client = await connectToDatabase();
+    const db = client.db("walker-cleaners");
+    const bookings = db.collection("bookings");
 
-    // GET - Fetch all bookings (for admin)
-    if (req.method === 'GET') {
-      const { phone, bookingId } = req.query;
+    // GET - Fetch bookings
+    if (req.method === "GET") {
+      const { phone, id } = req.query;
 
-      // If searching by phone or booking ID
-      if (phone || bookingId) {
-        const query = phone 
-          ? { phone: phone }
-          : { id: parseInt(bookingId) };
-        
-        const booking = await db.collection('bookings').findOne(query);
+      if (phone) {
+        const booking = await bookings.findOne({ phone });
         return res.status(200).json({ success: true, booking });
       }
 
-      // Return all bookings (for admin)
-      const bookings = await db.collection('bookings')
+      if (id) {
+        const booking = await bookings.findOne({ id: parseInt(id) });
+        return res.status(200).json({ success: true, booking });
+      }
+
+      // Return all bookings
+      const allBookings = await bookings
         .find({})
         .sort({ createdAt: -1 })
         .toArray();
-      
-      return res.status(200).json({ success: true, bookings });
+      return res.status(200).json({ success: true, bookings: allBookings });
     }
 
-    // POST - Create new booking
-    if (req.method === 'POST') {
-      const bookingData = req.body;
-      
-      const newBooking = {
-        ...bookingData,
+    // POST - Create booking
+    if (req.method === "POST") {
+      const booking = {
+        ...req.body,
         id: Date.now(),
-        status: 'pending',
-        createdAt: new Date().toISOString()
+        status: "pending",
+        createdAt: new Date().toISOString(),
       };
 
-      await db.collection('bookings').insertOne(newBooking);
-
-      // Trigger notification
-      await fetch(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/notify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ booking: newBooking })
-      });
-
-      return res.status(201).json({ success: true, booking: newBooking });
+      await bookings.insertOne(booking);
+      return res.status(201).json({ success: true, booking });
     }
 
-    // PUT - Update booking status (for admin)
-    if (req.method === 'PUT') {
+    // PUT - Update booking
+    if (req.method === "PUT") {
       const { id, status } = req.body;
-
-      await db.collection('bookings').updateOne(
+      await bookings.updateOne(
         { id: parseInt(id) },
         { $set: { status, updatedAt: new Date().toISOString() } }
       );
-
       return res.status(200).json({ success: true });
     }
 
-    // DELETE - Delete booking (for admin)
-    if (req.method === 'DELETE') {
+    // DELETE - Delete booking
+    if (req.method === "DELETE") {
       const { id } = req.query;
-
-      await db.collection('bookings').deleteOne({ id: parseInt(id) });
-
+      await bookings.deleteOne({ id: parseInt(id) });
       return res.status(200).json({ success: true });
     }
 
-    return res.status(405).json({ error: 'Method not allowed' });
-
+    return res.status(405).json({ error: "Method not allowed" });
   } catch (error) {
-    console.error('Database error:', error);
-    return res.status(500).json({ error: 'Database error', details: error.message });
+    console.error("Database error:", error);
+    return res.status(500).json({ error: error.message });
   }
-}
+};
